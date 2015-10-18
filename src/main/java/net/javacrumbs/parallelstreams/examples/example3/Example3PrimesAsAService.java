@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.example3;
 
 import static java.lang.Math.sqrt;
 import static java.util.stream.IntStream.range;

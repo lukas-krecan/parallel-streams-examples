@@ -13,35 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.example2;
 
+import static java.lang.Math.sqrt;
 import static java.util.stream.IntStream.range;
+import static java.util.stream.LongStream.rangeClosed;
+import static net.javacrumbs.common.Utils.log;
 import static net.javacrumbs.common.Utils.measure;
 
-public class Example4NestedSerial {
-
-    private static final int SIZE = 10_000;
-
+public class Example2PrimesParallel2 {
     public static void main(String[] args) throws InterruptedException {
-        new Example4NestedSerial().generateRandomMatrix();
+        new Example2PrimesParallel2().doRun();
     }
 
-    public byte[][] generateRandomMatrix() throws InterruptedException {
-        byte[][] results = new byte[SIZE][SIZE];
-        measure(() -> {
-            range(0, SIZE).forEach(i -> {
-                range(0, SIZE).forEach(j -> {
-                    results[i][j] = randomByte();
-                });
-            });
-
-        });
-        return results;
+    private void doRun() throws InterruptedException {
+        measure(() -> log(countPrimes(1_000_000, 2_000_000)));
     }
 
-    private byte randomByte() {
-        return (byte) Math.round(Math.random() * 100);
+    private long countPrimes(int from, int to) {
+        return range(from, to)
+                .parallel()
+                .filter(this::isPrime)
+                .count();
     }
 
-
+    public boolean isPrime(long n) {
+        return n > 1 && rangeClosed(2, (long) sqrt(n))
+                .noneMatch(divisor -> n % divisor == 0);
+    }
 }

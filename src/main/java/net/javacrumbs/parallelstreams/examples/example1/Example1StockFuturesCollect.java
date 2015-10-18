@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.example1;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
@@ -27,34 +27,28 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.javacrumbs.common.StockInfo;
 
-public class Example1StockFuturesCollectExecutor {
+public class Example1StockFuturesCollect {
 
     private static final List<String> SYMBOLS = asList(
             "AMD", "HPQ", "IBM", "TXN", "VMW", "XRX", "AAPL", "ADBE",
             "AMZN", "CRAY", "CSCO", "DELL", "GOOG", "INTC", "INTU",
             "MSFT", "ORCL", "TIBX", "VRSN", "YHOO");
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(20);
-
     public static void main(String[] args) {
-        new Example1StockFuturesCollectExecutor().doRun(SYMBOLS);
-        executorService.shutdown();
+        new Example1StockFuturesCollect().doRun(SYMBOLS);
     }
-
 
     private void doRun(List<String> symbols) {
         measure(() ->
                 symbols.stream()
                         .map(this::getStockInfo)
-                        .collect(toList())
+                        .collect(toList()) // collect to start calculation
                         .stream()
                         .map(this::getFutureValue)
                         .max(Comparator.comparingDouble(StockInfo::getPrice))
@@ -63,9 +57,7 @@ public class Example1StockFuturesCollectExecutor {
     }
 
     public Future<StockInfo> getStockInfo(String symbol) {
-        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, calculatePrice(symbol)), executorService);
-        // or even better
-        // return executorService.submit(() -> new StockInfo(symbol, calculatePrice(symbol));
+        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, calculatePrice(symbol)));
     }
 
     // Simulating long network task

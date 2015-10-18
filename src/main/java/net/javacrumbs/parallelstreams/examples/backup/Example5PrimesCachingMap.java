@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.backup;
 
 import static java.lang.Math.sqrt;
 import static java.util.stream.IntStream.range;
@@ -21,25 +21,35 @@ import static java.util.stream.LongStream.rangeClosed;
 import static net.javacrumbs.common.Utils.log;
 import static net.javacrumbs.common.Utils.measure;
 
-public class Example2PrimesSerial {
-    public static void main(String[] args) throws InterruptedException {
-        new Example2PrimesSerial().doRun();
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+
+public class Example5PrimesCachingMap {
+    private final ConcurrentMap<Integer, Boolean> isPrime = new ConcurrentHashMap<>();
+
+
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        new Example5PrimesCachingMap().doRun();
     }
 
-    private void doRun() throws InterruptedException {
+    private void doRun() throws InterruptedException, ExecutionException {
+        measure(() -> log(countPrimes(1_000_000, 2_000_000)));
         measure(() -> log(countPrimes(1_000_000, 2_000_000)));
     }
 
-    /**
-     * Returns number of primes in specified interval
-     * using really ineffective algorithm.
-     */
     private long countPrimes(int from, int to) {
-        return range(from, to).filter(this::isPrime).count();
+        return range(from, to)
+                .filter(this::isPrime)
+                .parallel()
+                .count();
     }
 
-    public boolean isPrime(long n) {
-        return n > 1 && rangeClosed(2, (long) sqrt(n))
-                .noneMatch(divisor -> n % divisor == 0);
+    public boolean isPrime(int i) {
+        return isPrime.computeIfAbsent(i, this::calculateIsPrime);
+    }
+
+    private boolean calculateIsPrime(int n) {
+        return n > 1 && rangeClosed(2, (long) sqrt(n)).noneMatch(divisor -> n % divisor == 0);
     }
 }

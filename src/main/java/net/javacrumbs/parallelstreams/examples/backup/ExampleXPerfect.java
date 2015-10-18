@@ -13,35 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.backup;
 
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
+import static net.javacrumbs.common.Utils.log;
 import static net.javacrumbs.common.Utils.measure;
 
-public class Example4Nested {
+import java.util.Collection;
 
-    private static final int SIZE = 10_000;
-
+public class ExampleXPerfect {
     public static void main(String[] args) throws InterruptedException {
-        new Example4Nested().generateRandomMatrix();
+        new ExampleXPerfect().doRun();
     }
 
-    public byte[][] generateRandomMatrix() throws InterruptedException {
-        byte[][] results = new byte[SIZE][SIZE];
-        measure(() -> {
-            range(0, SIZE).parallel().forEach(i -> {
-                range(0, SIZE).forEach(j -> {
-                    results[i][j] = randomByte();
-                });
-            });
-
-        });
-        return results;
+    public void doRun() throws InterruptedException {
+        measure(() -> log(perfectNumbers(1, 100_000)));
     }
 
-    private byte randomByte() {
-        return (byte) Math.round(Math.random() * 100);
+    private Collection<Integer> perfectNumbers(int from, int to) {
+        return range(from, to)
+                .parallel()
+                .filter(this::isPerfect)
+                .mapToObj(i -> i)
+                .collect(toList());
     }
 
-
+    public boolean isPerfect(int n) {
+        return range(1, n)
+                .parallel()
+                .filter(divisor -> n % divisor == 0)
+                .sum() == n;
+    }
 }

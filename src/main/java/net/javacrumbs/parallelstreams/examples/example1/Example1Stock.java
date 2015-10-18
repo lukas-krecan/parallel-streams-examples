@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.example1;
+
+import net.javacrumbs.common.StockInfo;
+
+import java.util.Comparator;
+import java.util.List;
 
 import static java.lang.Math.abs;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
 import static net.javacrumbs.common.Utils.log;
 import static net.javacrumbs.common.Utils.measure;
 import static net.javacrumbs.common.Utils.sleep;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import net.javacrumbs.common.StockInfo;
-
-public class Example1StockFuturesCollect {
+public class Example1Stock {
 
     private static final List<String> SYMBOLS = asList(
             "AMD", "HPQ", "IBM", "TXN", "VMW", "XRX", "AAPL", "ADBE",
@@ -41,23 +34,21 @@ public class Example1StockFuturesCollect {
             "MSFT", "ORCL", "TIBX", "VRSN", "YHOO");
 
     public static void main(String[] args) {
-        new Example1StockFuturesCollect().doRun(SYMBOLS);
+        new Example1Stock().doRun(SYMBOLS);
     }
 
     private void doRun(List<String> symbols) {
         measure(() ->
                 symbols.stream()
+                        .parallel()
                         .map(this::getStockInfo)
-                        .collect(toList()) // collect to start calculation
-                        .stream()
-                        .map(this::getFutureValue)
                         .max(Comparator.comparingDouble(StockInfo::getPrice))
                         .ifPresent(System.out::println)
         );
     }
 
-    public Future<StockInfo> getStockInfo(String symbol) {
-        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, calculatePrice(symbol)));
+    public StockInfo getStockInfo(String symbol) {
+        return new StockInfo(symbol, calculatePrice(symbol));
     }
 
     // Simulating long network task
@@ -65,13 +56,5 @@ public class Example1StockFuturesCollect {
         log("Getting price for symbol " + symbol);
         sleep(100);
         return abs(symbol.hashCode()) % 1000.0;
-    }
-
-    private StockInfo getFutureValue(Future<StockInfo> f) {
-        try {
-            return f.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            throw new CompletionException(e);
-        }
     }
 }

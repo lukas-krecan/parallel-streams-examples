@@ -13,37 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.javacrumbs.parallelstreams.examples;
+package net.javacrumbs.parallelstreams.examples.example2;
 
+import static java.lang.Math.sqrt;
 import static java.util.stream.IntStream.range;
+import static java.util.stream.LongStream.rangeClosed;
+import static net.javacrumbs.common.Utils.log;
 import static net.javacrumbs.common.Utils.measure;
 
-import java.util.concurrent.ThreadLocalRandom;
-
-public class Example4NestedSolution {
-
-    private static final int SIZE = 10_000;
-
+public class Example2PrimesSerial {
     public static void main(String[] args) throws InterruptedException {
-        new Example4NestedSolution().generateRandomMatrix();
+        new Example2PrimesSerial().doRun();
     }
 
-    public byte[][] generateRandomMatrix() throws InterruptedException {
-        byte[][] results = new byte[SIZE][SIZE];
-        measure(() -> {
-            range(0, SIZE).parallel().forEach(i -> {
-                range(0, SIZE).forEach(j -> {
-                    results[i][j] = randomByte();
-                });
-            });
-
-        });
-        return results;
+    private void doRun() throws InterruptedException {
+        measure(() -> log(countPrimes(1_000_000, 2_000_000)));
     }
 
-    private byte randomByte() {
-        // nextInt() would have been better but not comparable to the other solution
-        return (byte) Math.round(ThreadLocalRandom.current().nextDouble() * 100);
+    /**
+     * Returns number of primes in specified interval
+     * using really ineffective algorithm.
+     */
+    private long countPrimes(int from, int to) {
+        return range(from, to).filter(this::isPrime).count();
     }
 
+    public boolean isPrime(long n) {
+        return n > 1 && rangeClosed(2, (long) sqrt(n))
+                .noneMatch(divisor -> n % divisor == 0);
+    }
 }
