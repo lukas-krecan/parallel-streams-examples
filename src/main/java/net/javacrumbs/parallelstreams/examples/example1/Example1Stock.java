@@ -48,11 +48,11 @@ public class Example1Stock {
     }
 
     public StockInfo getStockInfo(String symbol) {
-        return new StockInfo(symbol, calculatePrice(symbol));
+        return new StockInfo(symbol, fetchPrice(symbol));
     }
 
     // Simulating long network task
-    private double calculatePrice(String symbol) {
+    private double fetchPrice(String symbol) {
         log("Getting price for symbol " + symbol);
         sleep(100);
         return abs(symbol.hashCode()) % 1000.0;

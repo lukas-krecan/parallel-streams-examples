@@ -55,11 +55,11 @@ public class Example1StockFutures {
     }
 
     public Future<StockInfo> getStockInfo(String symbol) {
-        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, calculatePrice(symbol)));
+        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, fetchPrice(symbol)));
     }
 
     // Simulating long network task
-    private double calculatePrice(String symbol) {
+    private double fetchPrice(String symbol) {
         log("Getting price for symbol " + symbol);
         sleep(100);
         return abs(symbol.hashCode()) % 1000.0;

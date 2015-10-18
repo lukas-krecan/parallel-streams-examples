@@ -63,13 +63,13 @@ public class Example1StockFuturesCollectExecutor {
     }
 
     public Future<StockInfo> getStockInfo(String symbol) {
-        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, calculatePrice(symbol)), executorService);
+        return CompletableFuture.supplyAsync(() -> new StockInfo(symbol, fetchPrice(symbol)), executorService);
         // or even better
-        // return executorService.submit(() -> new StockInfo(symbol, calculatePrice(symbol));
+        // return executorService.submit(() -> new StockInfo(symbol, fetchPrice(symbol));
     }
 
     // Simulating long network task
-    private double calculatePrice(String symbol) {
+    private double fetchPrice(String symbol) {
         log("Getting price for symbol " + symbol);
         sleep(100);
         return abs(symbol.hashCode()) % 1000.0;
